@@ -24,8 +24,9 @@ def Usage():
     print '-Y, --Date range as: year1/month1/day1/year2/month2/day2.'
     print '-S, --Station name.'
     print '-P, --Station longitude and latitude as: lon/lat.'
+    print '-T, --Add "20" before file name if the file name same as "06.112.23.02.34.1.sac".'
 
-opts, args = getopt.getopt(sys.argv[1:], "hI:O:Y:S:P:")
+opts, args = getopt.getopt(sys.argv[1:], "hI:O:Y:S:P:T")
 for op,value in opts:
     if op == "-I":
         In_path = value
@@ -37,36 +38,28 @@ for op,value in opts:
         staname = value
     elif op == "-P":
         latlon = value
+    elif op == "-T":
+        trans = 1
     elif op == "-h":
         Usage()
         sys.exit(1)
 
-lalo_split=latlon.split("/")
-slon=lalo_split[0]
-slat=lalo_split[1]
+lalo_split = latlon.split("/")
+slon = lalo_split[0]
+slat = lalo_split[1]
 
-y_split=yrange.split("/")
-year1=int(y_split[0])
-month1=int(y_split[1])
-day1=int(y_split[2])
-year2=int(y_split[3])
-month2=int(y_split[4])
-day2=int(y_split[5])
+y_split = yrange.split("/")
+year1 = int(y_split[0])
+month1 = int(y_split[1])
+day1 = int(y_split[2])
+year2 = int(y_split[3])
+month2 = int(y_split[4])
+day2 = int(y_split[5])
+
+daterange1 = datetime.date(year1,month1,day1)
+daterange2 = datetime.date(year2,month2,day2)
 
 
-#Set date range of data record
-#year1=2006
-#month1=8
-#day1=4
-#year2=2007
-#month2=7
-#day2=31
-
-daterange1=datetime.date(year1,month1,day1)
-daterange2=datetime.date(year2,month2,day2)
-
-#Open sattion list (3 column:station name, lat, lon)
-#stafile=open(In_path+'/stalist.dat',"r+")
 #Open event list
 listfile=open("EventCMT.dat","r")
 
@@ -74,12 +67,6 @@ listfile=open("EventCMT.dat","r")
 #>>>>>>>>>>1<<<<<<<<<<<<<
 #  Read each event from event list
 #######################################
-#for sta in stafile:
-# sta_split=sta.split()
-# staname=sta_split[0]
-# slat=sta_split[2]
-# slon=sta_split[1]
-# refnum=sta_split[3]
 if not exists(Out_path+'/'+staname):
     os.makedirs(Out_path+'/'+staname)
  
@@ -103,7 +90,10 @@ for event in listfile:
       for sac in glob.glob(In_path+"/"+staname+"/*1.sac"):
             sac=basename(sac)
             sac_split=sac.split('.')
-            year_sac=int('20'+sac_split[0])
+            if trans:
+                year_sac=int('20'+sac_split[0])
+            else:
+                year_sac=int(sac_split[0])
             julian_sac=int(sac_split[1])
             date_sac=datetime.datetime(year_sac, 1, 1) + datetime.timedelta(julian_sac-1)
             mon_sac=int(date_sac.strftime('%m'))
@@ -155,3 +145,4 @@ for event in listfile:
                 sacfile.close()
 
                 os.system('bash run_sac.sh')
+os.system('rm run_sac.sh')
