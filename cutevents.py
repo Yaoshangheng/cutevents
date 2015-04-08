@@ -13,9 +13,6 @@ import glob
 import sys,getopt
 
 
-#In_path="/Volumes/DATA.Tibet/Ordos" #Input path of serial data
-#Out_path="/Volumes/DATA.Tibet/DATA.Ordos"#Output path of event data
-
 def Usage():
     print 'usage: python cutevent.py [options]'
     print '-h, --help: print help message.'
@@ -24,7 +21,8 @@ def Usage():
     print '-Y, --Date range as: year1/month1/day1/year2/month2/day2.'
     print '-S, --Station name.'
     print '-P, --Station longitude and latitude as: lon/lat.'
-    print '-T, --Add "20" before file name if the file name same as "06.112.23.02.34.1.sac".'
+    print '-F, --The name format of SAC files, such as "*E*.SAC".'
+    print '-T, --Add "20" before file name while the files name are same as "06.112.23.02.34.1.sac".'
 
 opts, args = getopt.getopt(sys.argv[1:], "hI:O:Y:S:P:T")
 for op,value in opts:
@@ -38,6 +36,8 @@ for op,value in opts:
         staname = value
     elif op == "-P":
         latlon = value
+    elif op == "-F":
+        sacformat = value
     elif op == "-T":
         trans = 1
     elif op == "-h":
@@ -87,7 +87,7 @@ for event in listfile:
       yearstr=str(event_split[0])
       eventtime=datetime.datetime(year,mon,day,hour,min,sec)
       
-      for sac in glob.glob(In_path+"/"+staname+"/*1.sac"):
+      for sac in glob.glob(In_path+"/"+staname+"/"+sacformat):
             sac=basename(sac)
             sac_split=sac.split('.')
             if trans:
