@@ -20,11 +20,10 @@ def Usage():
     print '-O, --Output dirctory.'
     print '-Y, --Date range as: year1/month1/day1/year2/month2/day2.'
     print '-S, --Station name.'
-    print '-P, --Station longitude and latitude as: lon/lat.'
-    print '-F, --The name format of SAC files, such as "*E*.SAC".'
+    print '-P, --Station latitude and longitude as: lat/lon.'
     print '-T, --Add "20" before file name while the files name are same as "06.112.23.02.34.1.sac".'
-
-opts, args = getopt.getopt(sys.argv[1:], "hI:O:Y:S:P:T")
+trans = 0
+opts, args = getopt.getopt(sys.argv[1:], "hI:O:Y:S:P:T:")
 for op,value in opts:
     if op == "-I":
         In_path = value
@@ -36,17 +35,16 @@ for op,value in opts:
         staname = value
     elif op == "-P":
         latlon = value
-    elif op == "-F":
-        sacformat = value
     elif op == "-T":
         trans = 1
+        head = value
     elif op == "-h":
         Usage()
         sys.exit(1)
 
 lalo_split = latlon.split("/")
-slon = lalo_split[0]
-slat = lalo_split[1]
+slon = lalo_split[1]
+slat = lalo_split[0]
 
 y_split = yrange.split("/")
 year1 = int(y_split[0])
@@ -87,11 +85,11 @@ for event in listfile:
       yearstr=str(event_split[0])
       eventtime=datetime.datetime(year,mon,day,hour,min,sec)
       
-      for sac in glob.glob(In_path+"/"+staname+"/"+sacformat):
+      for sac in glob.glob(In_path+"/"+staname+'/R*/*.sac'):
             sac=basename(sac)
             sac_split=sac.split('.')
             if trans:
-                year_sac=int('20'+sac_split[0])
+                year_sac=int(head+sac_split[0])
             else:
                 year_sac=int(sac_split[0])
             julian_sac=int(sac_split[1])
@@ -102,13 +100,13 @@ for event in listfile:
             dt=eventtime-sactime
             if datetime.timedelta(0,0)<dt<=datetime.timedelta(0,3600):
                 sactime2=sactime + datetime.timedelta(0,3600)
-                sac_1_1=In_path+"/"+staname+"/"+sac
-                sac_2_1=glob.glob(In_path+"/"+staname+"/"+sac_split[0]+'.'+sac_split[1]+'.'+sac_split[2]+'.'+sac_split[3]+'.'+sac_split[4]+'.*.2.sac')
-                sac_3_1=glob.glob(In_path+"/"+staname+"/"+sac_split[0]+'.'+sac_split[1]+'.'+sac_split[2]+'.'+sac_split[3]+'.'+sac_split[4]+'.*.3.sac')
-                sac_1_2=glob.glob(In_path+"/"+staname+"/"+sactime2.strftime('%y')+'.'+sactime2.strftime('%j')+'.'+sactime2.strftime('%H')+"*.1.sac")
-                sac_2_2=glob.glob(In_path+"/"+staname+"/"+sactime2.strftime('%y')+'.'+sactime2.strftime('%j')+'.'+sactime2.strftime('%H')+"*.2.sac")
-                sac_3_2=glob.glob(In_path+"/"+staname+"/"+sactime2.strftime('%y')+'.'+sactime2.strftime('%j')+'.'+sactime2.strftime('%H')+"*.3.sac")
-                if sac_1_2==[] or sac_2_2==[] or sac_3_2==[]:
+                sac_1_1=glob.glob(In_path+"/"+staname+"/R*/"+sac)
+                sac_2_1=glob.glob(In_path+"/"+staname+"/R*/"+sac_split[0]+'.'+sac_split[1]+'.'+sac_split[2]+'.'+sac_split[3]+'.'+sac_split[4]+'.*.2.sac')
+                sac_3_1=glob.glob(In_path+"/"+staname+"/R*/"+sac_split[0]+'.'+sac_split[1]+'.'+sac_split[2]+'.'+sac_split[3]+'.'+sac_split[4]+'.*.3.sac')
+                sac_1_2=glob.glob(In_path+"/"+staname+"/R*/"+sactime2.strftime('%y')+'.'+sactime2.strftime('%j')+'.'+sactime2.strftime('%H')+"*.1.sac")
+                sac_2_2=glob.glob(In_path+"/"+staname+"/R*/"+sactime2.strftime('%y')+'.'+sactime2.strftime('%j')+'.'+sactime2.strftime('%H')+"*.2.sac")
+                sac_3_2=glob.glob(In_path+"/"+staname+"/R*/"+sactime2.strftime('%y')+'.'+sactime2.strftime('%j')+'.'+sactime2.strftime('%H')+"*.3.sac")
+                if sac_1_2==[] or sac_2_2==[] or sac_3_2==[] or sac_1_1==[] or sac_2_1==[] or sac_3_1==[]:
                     continue
                 else:
                     print(sac_3_1[0])
@@ -125,17 +123,23 @@ for event in listfile:
 
                 sacfile=open("run_sac.sh","w")
                 sacfile.write('sac <<END\n')
-                sacfile.write('merge '+sac_1_1+' '+sac_1_2[0]+'\n')
+                sacfile.write('r '+sac_1_1[0]+' '+sac_1_2[0]+'\n')
+                sacfile.write('rmean; rtrend\n')
+                sacfile.write('merge\n')
                 sacfile.write('cutim '+begin_t+' '+end_t+'\n')
                 sacfile.write('ch evla '+str(lat)+' evlo '+str(lon)+' KCMPNM 1 nzyear '+str(year)+' nzjday '+str(jjj)+' nzhour '+str(hour)+' nzmin '+str(min)+' nzsec '+str(sec)+' stla '+slat+' stlo '+slon+' kstnm '+staname+' b 0 e 3600 o 0\n')
                 sacfile.write('w '+Out_path+'/'+staname+'/'+eventtime.strftime('%Y')+'.'+eventtime.strftime('%j')+'.'+eventtime.strftime('%H')+'.'+eventtime.strftime('%M')+'.'+eventtime.strftime('%S')+'.1.sac\n')
                 sacfile.write('cut off\ndc all\n')
-                sacfile.write('merge '+sac_2_1[0]+' '+sac_2_2[0]+'\n')
+                sacfile.write('r '+sac_1_1[0]+' '+sac_1_2[0]+'\n')
+                sacfile.write('rmean; rtrend\n')
+                sacfile.write('merge\n')
                 sacfile.write('cutim '+begin_t+' '+end_t+'\n')
                 sacfile.write('ch evla '+str(lat)+' evlo '+str(lon)+' KCMPNM 2 nzyear '+str(year)+' nzjday '+str(jjj)+' nzhour '+str(hour)+' nzmin '+str(min)+' nzsec '+str(sec)+' stla '+slat+' stlo '+slon+' kstnm '+staname+' b 0 e 3600 o 0\n')
                 sacfile.write('w '+Out_path+'/'+staname+'/'+eventtime.strftime('%Y')+'.'+eventtime.strftime('%j')+'.'+eventtime.strftime('%H')+'.'+eventtime.strftime('%M')+'.'+eventtime.strftime('%S')+'.2.sac\n')
                 sacfile.write('cut off\ndc all\n')
-                sacfile.write('merge '+sac_3_1[0]+' '+sac_3_2[0]+'\n')
+                sacfile.write('r '+sac_1_1[0]+' '+sac_1_2[0]+'\n')
+                sacfile.write('rmean; rtrend\n')
+                sacfile.write('merge\n')
                 sacfile.write('cutim '+begin_t+' '+end_t+'\n')
                 sacfile.write('ch evla '+str(lat)+' evlo '+str(lon)+' KCMPNM 3 nzyear '+str(year)+' nzjday '+str(jjj)+' nzhour '+str(hour)+' nzmin '+str(min)+' nzsec '+str(sec)+' stla '+slat+' stlo '+slon+' kstnm '+staname+' b 0 e 3600 o 0\n')
                 sacfile.write('w '+Out_path+'/'+staname+'/'+eventtime.strftime('%Y')+'.'+eventtime.strftime('%j')+'.'+eventtime.strftime('%H')+'.'+eventtime.strftime('%M')+'.'+eventtime.strftime('%S')+'.3.sac\n')
