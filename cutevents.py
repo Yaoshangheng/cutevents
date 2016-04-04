@@ -15,7 +15,7 @@ import sys,getopt
 
 
 def Usage():
-    print('usage: python cutevent.py [options]')
+    print('usage: python cutevent.py -Iinpath -Ooutpath -Yyear1/month1/day1/year2/month2/day2 -Sstaname -Plat/lon [-Tprefix]')
     print('-h, --help: print help message.')
     print('-I, --Input dirctory.')
     print('-O, --Output dirctory.')
@@ -23,6 +23,7 @@ def Usage():
     print('-S, --Station name.')
     print('-P, --Station latitude and longitude as: lat/lon.')
     print('-T, --Add "20" before file name while the files name are same as "06.112.23.02.34.1.sac".')
+
 trans = 0
 opts, args = getopt.getopt(sys.argv[1:], "hI:O:Y:S:P:T:E:")
 for op,value in opts:
