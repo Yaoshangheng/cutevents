@@ -1,10 +1,11 @@
-#!/Applications/anaconda/bin/python
+#!/usr/bin/env python
 #
 #Life is short, you need Python!
 #Written by Mijian Xu
 #
 # 2015-1-4
 # 2016-4-1
+# 2016-4-8
 #
 
 from os.path import exists,basename
@@ -17,8 +18,8 @@ import sys,getopt
 def Usage():
     print('usage: python cutevent.py -Iinpath -Ooutpath -Yyear1/month1/day1/year2/month2/day2 -Sstaname -Plat/lon [-Tprefix]')
     print('-h, --help: print help message.')
-    print('-I, --Input dirctory.')
-    print('-O, --Output dirctory.')
+    print('-I, --Input directory.')
+    print('-O, --Output directory.')
     print('-Y, --Date range as: year1/month1/day1/year2/month2/day2.')
     print('-S, --Station name.')
     print('-P, --Station latitude and longitude as: lat/lon.')
