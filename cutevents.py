@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #
 #Life is short, you need Python!
-#Written by Mijian Xu
+#Written by Mijian Xu @NJU
 #
 # 2015-1-4
 # 2016-4-1
 # 2016-4-8
-#
+# 2017-8-14
 
 from os.path import exists,basename
 import datetime
@@ -23,7 +23,7 @@ def Usage():
     print('-Y, --Date range as: year1/month1/day1/year2/month2/day2.')
     print('-S, --Station name.')
     print('-P, --Station latitude and longitude as: lat/lon.')
-    print('-T, --Add "20" before file name while the files name are same as "06.112.23.02.34.1.sac".')
+    print('-T, --Add "prefix" before file name while the files name likes "06.112.23.02.34.1.sac".')
     print('-E, --catalog path')
 
 trans = 0
